@@ -5,7 +5,7 @@
   "description": "IdeaScout AI Backend API Server",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "npx prisma migrate deploy && node server.js",
     "dev": "nodemon server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
