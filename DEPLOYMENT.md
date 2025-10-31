@@ -9,11 +9,8 @@
 - Private 또는 Public 저장소 모두 가능합니다
 
 ### 2. 백엔드 배포 준비
-백엔드는 별도로 배포해야 합니다. 아래 중 하나를 선택하세요:
-- **Render** (권장): https://render.com
-- **Railway**: https://railway.app
-- **Heroku**: https://www.heroku.com
-- **AWS/GCP/Azure**: 클라우드 서비스
+백엔드는 별도로 배포해야 합니다:
+- **Render**: https://render.com (권장, 무료 플랜 제공)
 
 ## 🚀 프론트엔드 배포 (Vercel)
 
@@ -72,23 +69,24 @@ Vercel Dashboard → 프로젝트 설정 → Environment Variables에 다음을 
    - **Name**: `prd-pathfinder-backend`
    - **Root Directory**: `backend`
    - **Environment**: `Node`
-   - **Build Command**: `cd backend && npm install && npx prisma generate`
-   - **Start Command**: `cd backend && npm start`
+   - **Build Command**: `npm install && npx prisma generate`
+   - **Start Command**: `npm start`
    - **Plan**: Free 또는 Paid
 
 ### 3. 환경변수 설정
 Render Dashboard → Environment → Add Environment Variable:
 
-```
-PORT=10000
-CORS_ORIGIN=https://your-frontend-domain.vercel.app
-JWT_SECRET=your_random_secret_key_here
-JWT_EXPIRES_IN=7d
-DATABASE_URL=postgresql://user:password@host:5432/dbname
-DIRECT_URL=postgresql://user:password@host:5432/dbname
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
-```
+| 키 | 값 | 설명 |
+|---|---|---|
+| `CORS_ORIGIN` | `https://your-frontend-domain.vercel.app` | 프론트엔드 URL |
+| `JWT_SECRET` | `랜덤문자열32자이상` | JWT 암호화 키 |
+| `JWT_EXPIRES_IN` | `7d` | 토큰 만료 시간 |
+| `DATABASE_URL` | PostgreSQL 연결 문자열 | 데이터베이스 URL |
+| `DIRECT_URL` | PostgreSQL 연결 문자열 (동일) | 마이그레이션용 |
+| `OPENAI_API_KEY` | `sk-...` | OpenAI API 키 (선택사항) |
+| `OPENAI_MODEL` | `gpt-4o-mini` | OpenAI 모델 (선택사항) |
+
+**참고**: `PORT`는 Render가 자동으로 할당하므로 설정할 필요가 없습니다.
 
 ### 4. 데이터베이스 설정
 1. Render Dashboard → "New +" → "PostgreSQL"
@@ -97,34 +95,31 @@ OPENAI_MODEL=gpt-4o-mini
 4. Environment Variables에 추가
 
 ### 5. 데이터베이스 마이그레이션
-Render에서는 자동 마이그레이션이 없으므로, 서버 시작 시 실행되도록 설정:
+`backend/package.json`의 `start` 스크립트가 이미 설정되어 있어, 서버 시작 시 자동으로 마이그레이션이 실행됩니다:
 
-`backend/package.json`의 `start` 스크립트:
 ```json
 {
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "npx prisma generate && npx prisma migrate deploy"
+    "start": "npx prisma migrate deploy && node server.js",
+    "postinstall": "prisma generate"
   }
 }
 ```
 
-또는 Render의 Deploy Hook에서 마이그레이션을 실행할 수 있습니다.
+배포 시 자동으로 마이그레이션이 실행되므로 별도 작업이 필요 없습니다.
 
 ### 6. 서비스 URL 확인
 배포 완료 후 서비스 URL을 확인하고, 프론트엔드의 `VITE_API_BASE` 환경변수를 업데이트합니다.
 
-예시:
-- Render: `https://prd-pathfinder-backend.onrender.com`
-- Railway: `https://prd-pathfinder-backend.up.railway.app`
+예시: `https://prd-pathfinder-backend.onrender.com`
 
 ## 📝 환경변수 체크리스트
 
 ### 프론트엔드 (Vercel)
 - [ ] `VITE_API_BASE`: 백엔드 서버 URL
 
-### 백엔드 (Render/Railway 등)
-- [ ] `PORT`: 서버 포트 (Render는 자동 할당)
+### 백엔드 (Render)
+- [ ] `PORT`: 서버 포트 (Render는 자동 할당, 설정 불필요)
 - [ ] `CORS_ORIGIN`: 프론트엔드 URL
 - [ ] `JWT_SECRET`: 임의의 랜덤 문자열
 - [ ] `JWT_EXPIRES_IN`: 토큰 만료 시간 (예: 7d)
@@ -169,7 +164,7 @@ Render에서는 자동 마이그레이션이 없으므로, 서버 시작 시 실
 
 ### 사전 준비
 - [ ] GitHub 저장소에 프로젝트 푸시
-- [ ] 백엔드 배포 플랫폼 선택 (Render/Railway 등)
+- [ ] Render 계정 준비
 
 ### 프론트엔드 배포 (Vercel)
 - [ ] Vercel 계정 생성 및 로그인
@@ -199,7 +194,6 @@ Render에서는 자동 마이그레이션이 없으므로, 서버 시작 시 실
 
 - [Vercel 공식 문서](https://vercel.com/docs)
 - [Render 공식 문서](https://render.com/docs)
-- [Railway 공식 문서](https://docs.railway.app)
 - [Prisma 배포 가이드](https://www.prisma.io/docs/guides/deployment)
 - [Supabase 공식 문서](https://supabase.com/docs)
 

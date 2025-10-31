@@ -87,7 +87,7 @@ npm run prisma:generate
 3. 환경변수 설정 (`VITE_API_BASE`)
 4. 배포
 
-### 백엔드 배포 (Render/Railway)
+### 백엔드 배포 (Render)
 1. `backend` 디렉토리 배포
 2. 데이터베이스 설정
 3. 환경변수 설정
