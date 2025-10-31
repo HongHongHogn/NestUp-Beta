@@ -1,0 +1,33 @@
+# Render Blueprint for Backend Deployment
+# This file can be used to deploy backend on Render.com
+
+services:
+  - type: web
+    name: prd-pathfinder-backend
+    env: node
+    buildCommand: cd backend && npm install && npx prisma generate
+    startCommand: cd backend && npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGIN
+        sync: false # Set manually after frontend deployment
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: DATABASE_URL
+        fromDatabase:
+          name: prd-pathfinder-db
+          property: connectionString
+      - key: DIRECT_URL
+        fromDatabase:
+          name: prd-pathfinder-db
+          property: connectionString
+
+databases:
+  - name: prd-pathfinder-db
+    databaseName: prd_pathfinder
+    user: prd_pathfinder
+    plan: free
+
