@@ -24,6 +24,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
+import NavigationBar from "@/components/NavigationBar";
 
 const Report = () => {
   const navigate = useNavigate();
@@ -53,6 +54,18 @@ const Report = () => {
 
   function transformReport(r: any) {
     const analysis = r.analysisJson || {};
+    
+    // RAG 기반 데이터 추출 (analysisJson 내부에 포함됨)
+    const precedents = analysis.precedents || [];
+    const marketDemand = analysis.marketDemand || {
+      size: "-",
+      growth: "-",
+      competitionLevel: "-",
+      barriers: []
+    };
+    const recommendations = analysis.recommendations || [];
+    const targetCustomers = analysis.targetCustomers || [];
+    
     return {
       id: r.id,
       title: r.title,
@@ -63,20 +76,21 @@ const Report = () => {
       weaknesses: analysis.weaknesses || [],
       opportunities: analysis.opportunities || [],
       marketDemand: {
-        size: r.marketSize || "-",
-        growth: r.marketGrowth || "-",
-        competition: r.competitionLevel || "-",
-        barriers: analysis.threats || [],
+        size: marketDemand.size || "-",
+        growth: marketDemand.growth || "-",
+        competition: marketDemand.competitionLevel || "-",
+        barriers: marketDemand.barriers || analysis.threats || [],
       },
-      precedents: (r.precedents || []).map((p: any) => ({
-        name: p.name,
-        status: p.status,
-        reason: p.reason,
+      precedents: precedents.map((p: any) => ({
+        name: p.name || "알 수 없음",
+        status: p.status || "미확인",
+        reason: p.reason || "정보 없음",
         icon: p.status === "성공" ? CheckCircle2 : XCircle,
-        color: p.status === "성공" ? "text-green-600 dark:text-green-400" : "text-destructive",
+        color: p.status === "성공" ? "text-foreground" : "text-muted-foreground",
       })),
       risks: (analysis.threats || []).map((t: string) => ({ title: t, description: t, severity: "medium" })),
-      recommendations: r.recommendations || [],
+      recommendations: recommendations,
+      targetCustomers: targetCustomers,
       scoreBreakdown: {
         marketAttractiveness: r.marketScore ?? 60,
         competitiveAdvantage: r.competitionScore ?? 50,
@@ -97,9 +111,7 @@ const Report = () => {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return "text-green-600 dark:text-green-400";
-    if (score >= 50) return "text-yellow-600 dark:text-yellow-400";
-    return "text-red-600 dark:text-red-400";
+    return "text-foreground";
   };
 
   const getScoreLabel = (score: number) => {
@@ -116,14 +128,9 @@ const Report = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-secondary/20 to-background">
-        <header className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Skeleton className="h-8 w-32" />
-            <Skeleton className="h-9 w-24" />
-          </div>
-        </header>
-        <main className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-background">
+        <NavigationBar />
+        <main className="container mx-auto px-4 py-8 border-t border-border/40">
           <div className="max-w-5xl mx-auto space-y-8">
             <Skeleton className="h-10 w-64" />
             <Card>
@@ -155,24 +162,19 @@ const Report = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-secondary/20 to-background">
-      {/* Header */}
-      <header className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold text-primary">
-              IdeaScout AI
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
+    <div className="min-h-screen bg-background">
+      <NavigationBar />
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8 border-t border-border/40">
+        <div className="max-w-5xl mx-auto">
+          {/* Actions */}
+          <div className="flex justify-end gap-2 mb-6">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                  <Trash2 className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">삭제</span>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  삭제
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -193,28 +195,13 @@ const Report = () => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            <Button variant="outline" size="sm" className="hidden sm:flex">
-              <Download className="w-4 h-4 mr-2" />
-              PDF 저장
+            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")}>
+              대시보드로
             </Button>
-            <Button variant="outline" size="sm" className="hidden sm:flex">
-              <Share2 className="w-4 h-4 mr-2" />
-              공유
-            </Button>
-            <Button size="sm" onClick={() => navigate("/dashboard")}>
-              <span className="hidden sm:inline">대시보드로</span>
-              <span className="sm:hidden">대시보드</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={logout}>로그아웃</Button>
           </div>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
           {/* Title & Meta */}
-          <div className="mb-8 animate-fade-in">
+          <div className="mb-8">
             <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
               <span>검증 완료</span>
               <span>•</span>
@@ -224,7 +211,7 @@ const Report = () => {
           </div>
 
           {/* Validation Score - Hero */}
-          <Card className="mb-8 border-2 border-primary/20 shadow-xl animate-fade-in" style={{ animationDelay: "0.1s" }}>
+          <Card className="mb-8 border-white/20 hover:border-white/40">
             <CardContent className="p-4 sm:p-8">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="text-center md:text-left flex-1">
@@ -266,10 +253,10 @@ const Report = () => {
           </Card>
 
           {/* Summary */}
-          <Card className="mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+          <Card className="mb-8 border-white/20 hover:border-white/40">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-primary" />
+                <BarChart3 className="w-5 h-5 text-foreground" />
                 핵심 요약
               </CardTitle>
             </CardHeader>
@@ -280,12 +267,12 @@ const Report = () => {
 
           {/* SWOT Analysis */}
           {(report.strengths?.length > 0 || report.weaknesses?.length > 0 || report.opportunities?.length > 0) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8 animate-fade-in" style={{ animationDelay: "0.25s" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
               {report.strengths?.length > 0 && (
-                <Card className="border-green-500/20 bg-green-500/5">
+                <Card className="border-white/20 hover:border-white/40">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      <CheckCircle2 className="w-5 h-5 text-foreground" />
                       강점
                     </CardTitle>
                   </CardHeader>
@@ -293,7 +280,7 @@ const Report = () => {
                     <ul className="space-y-2">
                       {report.strengths.map((strength: string, index: number) => (
                         <li key={index} className="flex items-start gap-2 text-sm">
-                          <span className="text-green-600 dark:text-green-400 mt-0.5">•</span>
+                          <span className="text-foreground mt-0.5">•</span>
                           <span>{strength}</span>
                         </li>
                       ))}
@@ -303,10 +290,10 @@ const Report = () => {
               )}
 
               {report.weaknesses?.length > 0 && (
-                <Card className="border-yellow-500/20 bg-yellow-500/5">
+                <Card className="border-white/20 hover:border-white/40">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                      <AlertCircle className="w-5 h-5 text-foreground" />
                       약점
                     </CardTitle>
                   </CardHeader>
@@ -314,7 +301,7 @@ const Report = () => {
                     <ul className="space-y-2">
                       {report.weaknesses.map((weakness: string, index: number) => (
                         <li key={index} className="flex items-start gap-2 text-sm">
-                          <span className="text-yellow-600 dark:text-yellow-400 mt-0.5">•</span>
+                          <span className="text-foreground mt-0.5">•</span>
                           <span>{weakness}</span>
                         </li>
                       ))}
@@ -324,10 +311,10 @@ const Report = () => {
               )}
 
               {report.opportunities?.length > 0 && (
-                <Card className="border-blue-500/20 bg-blue-500/5">
+                <Card className="border-white/20 hover:border-white/40">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <TrendingUp className="w-5 h-5 text-foreground" />
                       기회
                     </CardTitle>
                   </CardHeader>
@@ -335,7 +322,7 @@ const Report = () => {
                     <ul className="space-y-2">
                       {report.opportunities.map((opportunity: string, index: number) => (
                         <li key={index} className="flex items-start gap-2 text-sm">
-                          <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                          <span className="text-foreground mt-0.5">•</span>
                           <span>{opportunity}</span>
                         </li>
                       ))}
@@ -347,10 +334,10 @@ const Report = () => {
           )}
 
           {/* Market Demand */}
-          <Card className="mb-8 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <Card className="mb-8 border-white/20 hover:border-white/40">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-primary" />
+                <TrendingUp className="w-5 h-5 text-foreground" />
                 시장 수요 분석
               </CardTitle>
               <CardDescription>AI가 분석한 시장 규모 및 성장성</CardDescription>
@@ -369,7 +356,7 @@ const Report = () => {
                     <TrendingUp className="w-4 h-4" />
                     연평균 성장률
                   </div>
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{report.marketDemand.growth}</div>
+                  <div className="text-2xl font-bold text-foreground">{report.marketDemand.growth}</div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -383,11 +370,11 @@ const Report = () => {
               <Separator className="my-6" />
               
               <div>
-                <h4 className="font-semibold mb-3">주요 진입 장벽</h4>
+                <h4 className="font-bold mb-3">주요 진입 장벽</h4>
                 <ul className="space-y-2">
                   {report.marketDemand.barriers.map((barrier, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                      <AlertCircle className="w-4 h-4 text-foreground flex-shrink-0 mt-0.5" />
                       <span>{barrier}</span>
                     </li>
                   ))}
@@ -397,10 +384,10 @@ const Report = () => {
           </Card>
 
           {/* Precedents */}
-          <Card className="mb-8 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+          <Card className="mb-8 border-white/20 hover:border-white/40">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-primary" />
+                <BarChart3 className="w-5 h-5 text-foreground" />
                 유사 사례 분석
               </CardTitle>
               <CardDescription>과거 성공/실패 사례로부터 배우는 인사이트</CardDescription>
@@ -408,7 +395,7 @@ const Report = () => {
             <CardContent>
               <div className="space-y-4">
                 {report.precedents.map((precedent, index) => (
-                  <Card key={index} className="border-border/50">
+                  <Card key={index} className="border-white/20 hover:border-white/40">
                     <CardContent className="pt-6">
                       <div className="flex items-start gap-4">
                         <div className={`w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 ${precedent.color}`}>
@@ -416,7 +403,7 @@ const Report = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold">{precedent.name}</h4>
+                            <h4 className="font-bold">{precedent.name}</h4>
                             <Badge variant={precedent.status === "성공" ? "default" : "destructive"}>
                               {precedent.status}
                             </Badge>
@@ -432,7 +419,7 @@ const Report = () => {
           </Card>
 
           {/* Risks */}
-          <Card className="mb-8 border-destructive/20 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+          <Card className="mb-8 border-white/20 hover:border-white/40">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-destructive" />
@@ -445,7 +432,7 @@ const Report = () => {
                 {report.risks.map((risk, index) => (
                   <div key={index} className="p-4 rounded-lg bg-destructive/5 border border-destructive/20">
                     <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-semibold">{risk.title}</h4>
+                      <h4 className="font-bold">{risk.title}</h4>
                       {getSeverityBadge(risk.severity)}
                     </div>
                     <p className="text-sm text-muted-foreground">{risk.description}</p>
@@ -456,10 +443,10 @@ const Report = () => {
           </Card>
 
           {/* Recommendations */}
-          <Card className="mb-8 border-primary/20 bg-gradient-to-br from-card to-primary/5 animate-fade-in" style={{ animationDelay: "0.6s" }}>
+          <Card className="mb-8 border-white/20 hover:border-white/40">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-primary" />
+                <CheckCircle2 className="w-5 h-5 text-foreground" />
                 AI 추천 전략
               </CardTitle>
               <CardDescription>시장 진입 및 피벗 방향 제안</CardDescription>
@@ -468,8 +455,8 @@ const Report = () => {
               <ul className="space-y-3">
                 {report.recommendations.map((rec, index) => (
                   <li key={index} className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-primary">{index + 1}</span>
+                    <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-bold text-foreground">{index + 1}</span>
                     </div>
                     <span className="flex-1">{rec}</span>
                   </li>
@@ -479,7 +466,7 @@ const Report = () => {
           </Card>
 
           {/* CTA */}
-          <div className="text-center animate-fade-in" style={{ animationDelay: "0.7s" }}>
+          <div className="text-center">
             <Button size="lg" onClick={() => navigate("/validate")}>
               다른 아이디어 검증하기
             </Button>

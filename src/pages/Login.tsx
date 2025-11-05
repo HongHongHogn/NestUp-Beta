@@ -36,8 +36,8 @@ const Login = () => {
       );
       if (!data.success) throw new Error("로그인에 실패했습니다.");
       login({ token: data.token, user: data.user });
-      toast({ title: "로그인 성공", description: "대시보드로 이동합니다." });
-      navigate("/dashboard");
+      toast({ title: "로그인 성공", description: "아이디어 검증을 시작하세요." });
+      navigate("/validate");
     } catch (err: any) {
       toast({ variant: "destructive", title: "오류", description: err.message || "문제가 발생했습니다." });
     } finally {
@@ -46,21 +46,21 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-primary/5 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-              <Zap className="w-6 h-6 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-lg bg-foreground flex items-center justify-center">
+              <Zap className="w-6 h-6 text-background" />
             </div>
-            <span className="text-2xl font-bold text-primary">
+            <span className="text-2xl font-bold text-foreground">
               IdeaScout AI
             </span>
           </div>
         </div>
 
-        <Card className="border-border/50 shadow-xl">
+        <Card className="border-white/20 hover:border-white/40">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">로그인</CardTitle>
             <CardDescription>
@@ -102,7 +102,7 @@ const Login = () => {
                 계정이 없으신가요?{" "}
                 <button
                   onClick={() => navigate("/signup")}
-                  className="text-primary hover:underline font-medium"
+                  className="text-foreground hover:underline font-medium"
                 >
                   회원가입
                 </button>

@@ -48,24 +48,24 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-primary/5 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-              <Zap className="w-6 h-6 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-lg bg-foreground flex items-center justify-center">
+              <Zap className="w-6 h-6 text-background" />
             </div>
-            <span className="text-2xl font-bold text-primary">
+            <span className="text-2xl font-bold text-foreground">
               IdeaScout AI
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            첫 검증 리포트 <span className="text-primary font-semibold">무료</span> 제공
+            첫 검증 리포트 <span className="text-foreground font-semibold">무료</span> 제공
           </p>
         </div>
 
-        <Card className="border-border/50 shadow-xl">
+        <Card className="border-white/20 hover:border-white/40">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">회원가입</CardTitle>
             <CardDescription>
@@ -119,7 +119,7 @@ const Signup = () => {
                 이미 계정이 있으신가요?{" "}
                 <button
                   onClick={() => navigate("/login")}
-                  className="text-primary hover:underline font-medium"
+                  className="text-foreground hover:underline font-medium"
                 >
                   로그인
                 </button>

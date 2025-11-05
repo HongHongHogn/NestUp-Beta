@@ -72,10 +72,13 @@ router.post('/login', validateRequest(loginSchema), async (req, res) => {
       user: { id: user.id, email: user.email, name: user.name }
     });
   } catch (error) {
+    console.error('Login error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
       message: '로그인 중 오류가 발생했습니다.',
-      error: error.message
+      error: error.message,
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
     });
   }
 });

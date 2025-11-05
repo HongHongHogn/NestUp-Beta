@@ -20,9 +20,12 @@ JWT_EXPIRES_IN=7d
 # Supabase Database URL
 DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres?pgbouncer=true"
 
-# OpenAI (선택사항)
+# OpenAI (필수 - AI 분석용)
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4o-mini
+
+# Tavily API (필수 - RAG 웹 검색용)
+TAVILY_API_KEY=tvly-dev-...
 ```
 
 ### Supabase Connection String 얻는 방법

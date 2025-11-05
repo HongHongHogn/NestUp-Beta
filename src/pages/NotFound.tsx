@@ -13,14 +13,14 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-primary/5 flex items-center justify-center p-4">
-      <Card className="border-border/50 shadow-xl max-w-md w-full animate-fade-in">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="border-white/20 hover:border-white/40 max-w-md w-full animate-fade-in">
         <CardContent className="p-8 text-center">
           <div className="mb-6">
-            <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center mb-4">
-              <Zap className="w-10 h-10 text-primary-foreground" />
+            <div className="w-20 h-20 mx-auto rounded-full bg-foreground flex items-center justify-center mb-4">
+              <Zap className="w-10 h-10 text-background" />
             </div>
-            <div className="text-8xl font-bold text-primary mb-2">404</div>
+            <div className="text-8xl font-bold text-foreground mb-2">404</div>
             <h1 className="text-2xl font-bold mb-2">페이지를 찾을 수 없습니다</h1>
             <p className="text-muted-foreground mb-6">
               요청하신 페이지가 존재하지 않거나 이동되었을 수 있습니다.

@@ -12,6 +12,10 @@ import Dashboard from "./pages/Dashboard";
 import Validate from "./pages/Validate";
 import Report from "./pages/Report";
 import Profile from "./pages/Profile";
+import Templates from "./pages/Templates";
+import Team from "./pages/Team";
+import Mentoring from "./pages/Mentoring";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,7 +26,12 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
@@ -31,6 +40,10 @@ const App = () => (
             <Route path="/validate" element={<ProtectedRoute><Validate /></ProtectedRoute>} />
             <Route path="/report/:reportId" element={<ProtectedRoute><Report /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/mentoring" element={<Mentoring />} />
+            <Route path="/contact" element={<Contact />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

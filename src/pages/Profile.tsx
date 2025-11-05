@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import NavigationBar from "@/components/NavigationBar";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -61,44 +62,25 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-secondary/20 to-background">
-      {/* Header */}
-      <header className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold text-primary">
-              IdeaScout AI
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-              <span className="hidden sm:inline">대시보드로</span>
-              <span className="sm:hidden">대시</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={logout}>로그아웃</Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background">
+      <NavigationBar />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 border-t border-border/40">
         <div className="max-w-2xl mx-auto">
           {/* Page Title */}
-          <div className="mb-8 animate-fade-in">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">내 프로필</h1>
-            <p className="text-muted-foreground text-lg">
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight">내 프로필</h1>
+            <p className="text-muted-foreground">
               계정 정보를 관리하세요
             </p>
           </div>
 
           {/* Profile Information */}
-          <Card className="mb-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+          <Card className="mb-6 border-white/20 hover:border-white/40">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5 text-primary" />
+                <User className="w-5 h-5 text-foreground" />
                 계정 정보
               </CardTitle>
               <CardDescription>
@@ -138,10 +120,10 @@ const Profile = () => {
           </Card>
 
           {/* Security */}
-          <Card className="mb-6 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+          <Card className="mb-6 border-white/20 hover:border-white/40">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-primary" />
+                <Shield className="w-5 h-5 text-foreground" />
                 보안
               </CardTitle>
               <CardDescription>
@@ -159,7 +141,7 @@ const Profile = () => {
           </Card>
 
           {/* Danger Zone */}
-          <Card className="border-destructive/20 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <Card className="border-white/20 hover:border-white/40 border-destructive/20">
             <CardHeader>
               <CardTitle className="text-destructive">위험한 작업</CardTitle>
               <CardDescription>

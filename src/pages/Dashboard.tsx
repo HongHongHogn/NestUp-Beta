@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { apiFetch } from "@/lib/api";
+import NavigationBar from "@/components/NavigationBar";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -50,9 +51,7 @@ const Dashboard = () => {
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return "text-green-600 dark:text-green-400";
-    if (score >= 50) return "text-yellow-600 dark:text-yellow-400";
-    return "text-red-600 dark:text-red-400";
+    return "text-foreground";
   };
 
   const getScoreBadge = (score: number) => {
@@ -77,44 +76,31 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-secondary/20 to-background">
-      {/* Header */}
-      <header className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold text-primary">
-              IdeaScout AI
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={() => navigate("/profile")}>내 계정</Button>
-            <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={logout}>로그아웃</Button>
-            <Button variant="ghost" size="sm" className="sm:hidden" onClick={logout} title="로그아웃">↗</Button>
-            <Button size="sm" onClick={() => navigate("/validate")}>
-              <Plus className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">새 검증</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background">
+      <NavigationBar />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 border-t border-border/40">
         <div className="max-w-6xl mx-auto">
           {/* Welcome Section */}
-          <div className="mb-8 animate-fade-in">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">내 대시보드</h1>
-            <p className="text-muted-foreground text-lg">
-              검증한 아이디어를 관리하고 인사이트를 확인하세요
-            </p>
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight">내 대시보드</h1>
+                <p className="text-muted-foreground">
+                  검증한 아이디어를 관리하고 인사이트를 확인하세요
+                </p>
+              </div>
+              <Button onClick={() => navigate("/validate")}>
+                <Plus className="w-4 h-4 mr-2" />
+                새 검증
+              </Button>
+            </div>
           </div>
 
           {/* Stats */}
           <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <Card className="border-border/50 hover:border-primary/50 transition-all animate-fade-in">
+            <Card className="border-white/20 hover:border-white/40 transition-colors">
               <CardHeader className="pb-3">
                 <CardDescription>총 검증 수</CardDescription>
                 <CardTitle className="text-3xl">{reports.length}</CardTitle>
@@ -127,7 +113,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 hover:border-primary/50 transition-all animate-fade-in" style={{ animationDelay: "0.1s" }}>
+            <Card className="border-white/20 hover:border-white/40 transition-colors">
               <CardHeader className="pb-3">
                 <CardDescription>평균 검증 점수</CardDescription>
                 <CardTitle className="text-3xl">{avgScore || 0}</CardTitle>
@@ -140,13 +126,13 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 hover:border-primary/50 transition-all animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            <Card className="border-white/20 hover:border-white/40 transition-colors">
               <CardHeader className="pb-3">
                 <CardDescription>무료 크레딧</CardDescription>
                 <CardTitle className="text-3xl">1</CardTitle>
               </CardHeader>
               <CardContent>
-                <Button variant="link" className="p-0 h-auto text-primary" onClick={() => navigate("/pricing")}>
+                <Button variant="link" className="p-0 h-auto text-foreground" onClick={() => navigate("/pricing")}>
                   크레딧 충전하기 →
                 </Button>
               </CardContent>
@@ -155,18 +141,12 @@ const Dashboard = () => {
 
           {/* Reports List */}
           <div className="mb-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <h2 className="text-xl sm:text-2xl font-bold">검증 리포트</h2>
-              <Button size="sm" onClick={() => navigate("/validate")}>
-                <Plus className="w-4 h-4 mr-2" />
-                새 검증 시작
-              </Button>
-            </div>
+            <h2 className="text-xl sm:text-2xl font-bold mb-6 tracking-tight">검증 리포트</h2>
 
             {loading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <Card key={i} className="border-border/50">
+                  <Card key={i} className="border-white/20">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 space-y-3">
@@ -186,12 +166,12 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : reports.length === 0 ? (
-              <Card className="border-dashed border-2 border-border/50">
+              <Card className="border-dashed border-2 border-white/20">
                 <CardContent className="flex flex-col items-center justify-center py-16">
                   <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
                     <FileText className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">아직 검증한 아이디어가 없습니다</h3>
+                  <h3 className="text-xl font-bold mb-2">아직 검증한 아이디어가 없습니다</h3>
                   <p className="text-muted-foreground mb-6 text-center max-w-md">
                     첫 번째 아이디어를 검증하고 AI 분석 리포트를 받아보세요
                   </p>
@@ -202,19 +182,18 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
-                {reports.map((report, index) => (
+              <div className="space-y-3">
+                {reports.map((report) => (
                   <Card 
                     key={report.id} 
-                    className="border-border/50 hover:border-primary/50 hover:shadow-lg transition-all cursor-pointer animate-fade-in"
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className="border-white/20 hover:border-white/40 transition-colors cursor-pointer"
                     onClick={() => navigate(`/report/${report.id}`)}
                   >
                     <CardContent className="p-6">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex-1 w-full">
                           <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <h3 className="text-base sm:text-lg font-semibold break-words">{report.title}</h3>
+                            <h3 className="text-base sm:text-lg font-bold break-words">{report.title}</h3>
                             <Badge variant={report.score >= 70 ? "default" : report.score >= 50 ? "secondary" : "destructive"}>
                               {getScoreBadge(report.score)}
                             </Badge>
