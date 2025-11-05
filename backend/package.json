@@ -1,8 +1,8 @@
 {
-  "name": "ideascout-ai-backend",
+  "name": "nestup-ai-backend",
   "version": "1.0.0",
   "type": "module",
-  "description": "IdeaScout AI Backend API Server",
+  "description": "NestUp AI Backend API Server",
   "main": "server.js",
   "scripts": {
     "start": "npx prisma migrate deploy && node server.js",

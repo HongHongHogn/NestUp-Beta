@@ -1,4 +1,4 @@
-# IdeaScout AI Backend API Server
+# NestUp AI Backend API Server
 
 ## 설치 방법
 

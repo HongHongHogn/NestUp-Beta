@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Zap } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -51,11 +50,9 @@ const Login = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-foreground flex items-center justify-center">
-              <Zap className="w-6 h-6 text-background" />
-            </div>
+            <img src="/logo.svg" alt="NestUp AI" className="w-10 h-10" />
             <span className="text-2xl font-bold text-foreground">
-              IdeaScout AI
+              NestUp AI
             </span>
           </div>
         </div>

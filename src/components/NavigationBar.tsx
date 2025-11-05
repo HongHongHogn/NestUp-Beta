@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Zap, History, User, LogOut, FileText } from "lucide-react";
+import { History, User, LogOut, FileText } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
@@ -59,10 +59,8 @@ const NavigationBar = ({ showLogo = true }: NavigationBarProps) => {
             className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
             onClick={() => navigate("/")}
           >
-            <div className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center">
-              <Zap className="w-4 h-4 text-background" />
-            </div>
-            <span className="text-sm font-semibold text-foreground">IdeaScout</span>
+            <img src="/logo.svg" alt="NestUp AI" className="w-6 h-6" />
+            <span className="text-sm font-semibold text-foreground">NestUp AI</span>
           </div>
         )}
 

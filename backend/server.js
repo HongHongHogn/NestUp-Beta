@@ -30,7 +30,7 @@ app.use('/api/report', reportRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'IdeaScout AI Backend is running' });
+  res.json({ status: 'ok', message: 'NestUp AI Backend is running' });
 });
 
 app.listen(PORT, () => {

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none">
+  <!-- Outer circle with thin blue outline -->
+  <circle cx="60" cy="60" r="58" stroke="#4A90E2" stroke-width="2" fill="none"/>
+  
+  <!-- Nest - bottom line (curved horizontal, thicker at ends) -->
+  <path d="M 25 82 Q 45 78, 60 78 Q 75 78, 95 82" 
+        stroke="#4A90E2" 
+        stroke-width="3" 
+        stroke-linecap="round"
+        fill="none"/>
+  
+  <!-- Nest - top line (curved horizontal, thicker at ends) -->
+  <path d="M 28 88 Q 45 84, 60 84 Q 75 84, 92 88" 
+        stroke="#4A90E2" 
+        stroke-width="3" 
+        stroke-linecap="round"
+        fill="none"/>
+  
+  <!-- Bird body (smooth rounded shape, sitting in nest, facing right) -->
+  <path d="M 50 72 Q 46 68, 50 62 Q 56 58, 64 60 Q 70 62, 73 66 Q 72 70, 68 72 Q 62 74, 56 73 Z" 
+        fill="#4A90E2"/>
+  
+  <!-- Bird head (rounded, facing right) -->
+  <ellipse cx="68" cy="64" rx="7" ry="6.5" fill="#4A90E2"/>
+  
+  <!-- Bird eye (small solid blue dot) -->
+  <circle cx="71" cy="63" r="1.5" fill="#FFFFFF"/>
+</svg>

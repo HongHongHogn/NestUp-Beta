@@ -227,7 +227,7 @@ const Landing = () => {
       >
         <div className="max-w-6xl mx-auto scroll-reveal">
           <div className="text-center mb-12 scroll-reveal">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">왜 IdeaScout AI인가요?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">왜 NestUp AI인가요?</h2>
             <p className="text-muted-foreground text-lg">
               전문가 수준의 시장 검증을 누구나 쉽게
             </p>
@@ -319,7 +319,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="border-t border-border/40 py-12">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2025 IdeaScout AI. All rights reserved.</p>
+          <p>© 2025 NestUp AI. All rights reserved.</p>
         </div>
       </footer>
     </div>
