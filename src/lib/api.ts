@@ -32,6 +32,12 @@ export async function apiFetch<T>(path: string, options: { method?: HttpMethod; 
 	}
 	
 	if (res.status === 401) {
+		// 로그인 엔드포인트의 경우 백엔드 메시지를 그대로 전달
+		if (path === "/api/auth/login") {
+			const errorMessage = data?.message || "잘못된 이메일/비밀번호입니다.";
+			throw new Error(errorMessage);
+		}
+		// 다른 엔드포인트의 경우 기존 동작 유지
 		try {
 			window.localStorage.removeItem("token");
 			window.localStorage.removeItem("user");

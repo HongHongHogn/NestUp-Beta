@@ -50,12 +50,12 @@ router.post('/login', validateRequest(loginSchema), async (req, res) => {
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(401).json({ success: false, message: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+      return res.status(401).json({ success: false, message: '잘못된 이메일/비밀번호입니다.' });
     }
 
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) {
-      return res.status(401).json({ success: false, message: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+      return res.status(401).json({ success: false, message: '잘못된 이메일/비밀번호입니다.' });
     }
 
     const secret = process.env.JWT_SECRET;

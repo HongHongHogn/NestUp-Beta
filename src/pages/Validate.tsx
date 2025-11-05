@@ -1,16 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { 
-  Zap, 
-  ArrowUp, 
-  ChevronDown, 
-  ChevronUp,
-  Paperclip,
-  Grid3x3,
-  Search,
-  Globe,
-  FileText
+  ArrowUp
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
@@ -25,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
 
 const Validate = () => {
   const navigate = useNavigate();
@@ -33,7 +23,6 @@ const Validate = () => {
   const { token } = useAuth();
   const [idea, setIdea] = useState("");
   const [purpose, setPurpose] = useState("비즈니스 아이디어 검증");
-  const [slideCount, setSlideCount] = useState(5);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // 로그인하지 않은 경우 로그인 페이지로 리디렉션
@@ -123,46 +112,7 @@ const Validate = () => {
             </div>
 
             {/* Bottom Controls */}
-            <div className="flex items-center justify-between pt-4 border-t border-border/40">
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-                  title="첨부"
-                >
-                  <Paperclip className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-                  title="템플릿"
-                >
-                  <Grid3x3 className="w-5 h-5" />
-                </button>
-                <div className="flex items-center gap-1 border border-border/40 rounded-md">
-                  <button
-                    type="button"
-                    onClick={() => setSlideCount(Math.max(1, slideCount - 1))}
-                    className="p-1 text-muted-foreground hover:text-foreground"
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                  </button>
-                  <Input
-                    type="number"
-                    value={slideCount}
-                    onChange={(e) => setSlideCount(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-12 h-8 text-center border-0 bg-transparent p-0"
-                    min={1}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setSlideCount(slideCount + 1)}
-                    className="p-1 text-muted-foreground hover:text-foreground"
-                  >
-                    <ChevronUp className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+            <div className="flex items-center justify-end pt-4 border-t border-border/40">
               <Button
                 type="submit"
                 disabled={idea.length < 100 || isAnalyzing}
@@ -182,38 +132,6 @@ const Validate = () => {
               </Button>
             </div>
           </form>
-
-          {/* Bottom Action Buttons */}
-          <div className="flex items-center justify-center gap-4 flex-wrap">
-            <Button
-              variant="outline"
-              className="border-white/20 hover:border-white/40 bg-card hover:bg-card/80 rounded-md"
-            >
-              <Search className="w-4 h-4 mr-2" />
-              웹 리서치
-            </Button>
-            <Button
-              variant="outline"
-              className="border-white/20 hover:border-white/40 bg-card hover:bg-card/80 rounded-md"
-            >
-              <Globe className="w-4 h-4 mr-2" />
-              웹 스크랩
-            </Button>
-            <Button
-              variant="outline"
-              className="border-white/20 hover:border-white/40 bg-card hover:bg-card/80 rounded-md"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              노션 가져오기
-            </Button>
-            <Button
-              variant="outline"
-              className="border-white/20 hover:border-white/40 bg-card hover:bg-card/80 rounded-md"
-            >
-              <Zap className="w-4 h-4 mr-2" />
-              전문가 모드
-            </Button>
-          </div>
         </div>
       </main>
     </div>
