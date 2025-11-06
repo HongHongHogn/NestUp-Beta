@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Validate from "./pages/Validate";
 import Report from "./pages/Report";
 import Profile from "./pages/Profile";
+import WorkspaceBM from "./pages/WorkspaceBM";
 import Templates from "./pages/Templates";
 import Team from "./pages/Team";
 import Mentoring from "./pages/Mentoring";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/validate" element={<ProtectedRoute><Validate /></ProtectedRoute>} />
             <Route path="/report/:reportId" element={<ProtectedRoute><Report /></ProtectedRoute>} />
+            <Route path="/workspace/:projectId/bm" element={<ProtectedRoute><WorkspaceBM /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/team" element={<Team />} />

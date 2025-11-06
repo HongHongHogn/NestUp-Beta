@@ -56,6 +56,9 @@ export function convertToSignalInput({ ideaText, ragResult, aiAnalysis, options 
   // 실패 패턴 회피 수 계산
   const failurePatternAvoided = (precedents || []).filter(p => p.status === '실패').length;
   
+  // 아이디어 텍스트 자체의 특징 분석 (기본값 대체용)
+  const ideaCharacteristics = analyzeIdeaCharacteristics(ideaText);
+  
   // 경쟁 수준을 숫자로 변환
   const competitionLevel = marketDemand.competitionLevel || '';
   const competitionScore = competitionLevel === 'High' ? 0.8 : 
@@ -86,19 +89,30 @@ export function convertToSignalInput({ ideaText, ragResult, aiAnalysis, options 
   const aiRiskScore = aiAnalysis?.riskScore;
   const aiTotalScore = aiAnalysis?.score;
   
-  // 시장 매력도 신호: AI의 marketScore를 활용
-  // marketScore가 높으면 성장 신호도 양수로 추정
-  const marketZ = aiMarketScore ? scoreToZ(aiMarketScore) : undefined;
+  // RAG 검색 결과에서 신호 추출 (더 중요하게 사용)
+  const ragSignals = extractSignalsFromRAG(searchResults, ideaText);
   
-  // 자본 신호: AI 분석에서 시장 규모/성장률 언급 여부로 추정
-  const roundCount24m = extractInvestmentSignals(aiAnalysis, searchResults);
+  // 시장 매력도 신호: RAG 결과와 AI 점수를 조합
+  // RAG 결과가 있으면 이를 우선 사용, 없으면 AI 점수 사용
+  const marketZ = ragSignals.newsGrowthZ !== undefined 
+    ? ragSignals.newsGrowthZ 
+    : (aiMarketScore ? scoreToZ(aiMarketScore) : undefined);
   
-  // 경쟁 우위 신호: AI의 competitionScore 활용
-  const execReadinessFromAI = aiCompetitionScore ? scoreToRatio(aiCompetitionScore) : extractExecReadiness(aiAnalysis);
+  // 자본 신호: RAG 결과 우선, 없으면 AI 분석 활용
+  const roundCount24m = ragSignals.roundCount24m || extractInvestmentSignals(aiAnalysis, searchResults);
   
-  // 리스크 신호: AI의 riskScore와 경쟁 수준을 분리
-  const copycatRiskValue = extractCopycatRisk(aiAnalysis, competitionScore);
-  const giantEntryRiskValue = extractGiantEntryRisk(aiAnalysis, competitionScore);
+  // 경쟁 우위 신호: RAG 결과와 AI 점수 조합
+  const execReadinessFromAI = ragSignals.execReadinessScore !== undefined
+    ? ragSignals.execReadinessScore
+    : (aiCompetitionScore ? scoreToRatio(aiCompetitionScore) : extractExecReadiness(aiAnalysis));
+  
+  // 리스크 신호: RAG 결과와 AI 분석 조합
+  const copycatRiskValue = ragSignals.copycatRisk !== undefined 
+    ? ragSignals.copycatRisk 
+    : extractCopycatRisk(aiAnalysis, competitionScore);
+  const giantEntryRiskValue = ragSignals.giantEntryRisk !== undefined
+    ? ragSignals.giantEntryRisk
+    : extractGiantEntryRisk(aiAnalysis, competitionScore);
   
   const signalInput = {
     // 공통 메타
@@ -109,21 +123,33 @@ export function convertToSignalInput({ ideaText, ragResult, aiAnalysis, options 
     freshnessRatio: freshnessRatio,
     
     // ── A. 시장 매력도 신호 ──
-    // AI의 marketScore를 성장 신호로 변환
-    newsGrowthZ: marketZ, // AI marketScore → z-score
-    hiringGrowthZ: marketZ ? marketZ * 0.8 : undefined, // 시장 성장과 연관
-    searchTrendZ: marketZ ? marketZ * 0.9 : undefined, // 시장 성장과 연관
+    // RAG 결과 우선, 없으면 AI 점수 사용
+    newsGrowthZ: ragSignals.newsGrowthZ !== undefined ? ragSignals.newsGrowthZ : marketZ,
+    hiringGrowthZ: ragSignals.hiringGrowthZ !== undefined 
+      ? ragSignals.hiringGrowthZ 
+      : (marketZ ? marketZ * 0.8 : undefined),
+    searchTrendZ: ragSignals.searchTrendZ !== undefined
+      ? ragSignals.searchTrendZ
+      : (marketZ ? marketZ * 0.9 : undefined),
     roundCount24m: roundCount24m?.count,
     roundAmount24m: roundCount24m?.amount,
-    customerBuzzZ: marketZ ? marketZ * 0.7 : undefined, // 고객 관심도는 시장 성장과 연관
+    customerBuzzZ: ragSignals.customerBuzzZ !== undefined
+      ? ragSignals.customerBuzzZ
+      : (marketZ ? marketZ * 0.7 : undefined),
     regulatoryRiskScore: extractRegulatoryRisk(aiAnalysis, searchResults),
     sourceCoverage: distinctDomains.size || evidences.length,
     
     // ── B. 경쟁 우위(모트) 신호 ──
-    uspDistance: extractUSPDistance(aiAnalysis),
-    moatMentions: extractMoatMentions(aiAnalysis, searchResults),
-    execReadinessScore: execReadinessFromAI, // AI competitionScore 우선 사용
-    nicheFitScore: extractNicheFit(aiAnalysis),
+    uspDistance: ragSignals.uspDistance !== undefined 
+      ? ragSignals.uspDistance 
+      : extractUSPDistance(aiAnalysis),
+    moatMentions: ragSignals.moatMentions !== undefined
+      ? ragSignals.moatMentions
+      : extractMoatMentions(aiAnalysis, searchResults),
+    execReadinessScore: execReadinessFromAI,
+    nicheFitScore: ragSignals.nicheFitScore !== undefined
+      ? ragSignals.nicheFitScore
+      : extractNicheFit(aiAnalysis),
     copycatRisk: copycatRiskValue, // 카피 리스크와 빅테크 진입 리스크 분리
     giantEntryRisk: giantEntryRiskValue,
     
@@ -451,5 +477,232 @@ function extractCategory(ideaText) {
   }
   
   return undefined;
+}
+
+/**
+ * RAG 검색 결과에서 신호 추출 (아이디어별 차별화를 위해 중요)
+ * @param {Array} searchResults - RAG 검색 결과 배열
+ * @param {string} ideaText - 아이디어 텍스트
+ * @returns {Object} 추출된 신호 객체
+ */
+function extractSignalsFromRAG(searchResults, ideaText) {
+  const signals = {};
+  
+  if (!searchResults || searchResults.length === 0) {
+    return signals;
+  }
+  
+  // 검색 결과를 평탄화 (중첩 구조 지원)
+  const flattenedResults = [];
+  for (const searchResult of searchResults) {
+    if (searchResult.results && Array.isArray(searchResult.results)) {
+      // 중첩 구조인 경우
+      flattenedResults.push(...searchResult.results);
+    } else if (searchResult.title || searchResult.content || searchResult.snippet) {
+      // 이미 평탄화된 구조인 경우
+      flattenedResults.push(searchResult);
+    }
+  }
+  
+  if (flattenedResults.length === 0) {
+    return signals;
+  }
+  
+  // 모든 검색 결과의 텍스트를 합침
+  const allText = flattenedResults
+    .map(r => `${r.title || ''} ${r.content || ''} ${r.snippet || ''}`)
+    .join(' ')
+    .toLowerCase();
+  
+  const ideaTextLower = ideaText.toLowerCase();
+  
+  // 1. 성장 신호: 뉴스/기사에서 성장 관련 키워드 빈도
+  const growthKeywords = ['성장', 'growth', '증가', 'increase', '상승', 'rise', '확대', 'expand'];
+  const growthMentions = growthKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  // 0-10개 기준으로 z-score 변환 (-2 ~ +2)
+  signals.newsGrowthZ = normalizeToZScore(growthMentions, 0, 10);
+  
+  // 2. 고용 성장: 채용/고용 관련 키워드
+  const hiringKeywords = ['채용', 'hiring', '고용', 'employment', 'recruit', '인력', '직원'];
+  const hiringMentions = hiringKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  signals.hiringGrowthZ = normalizeToZScore(hiringMentions, 0, 8);
+  
+  // 3. 검색 트렌드: 검색량/트렌드 관련 키워드
+  const searchKeywords = ['검색', 'search', 'trend', '트렌드', '인기', 'popular', 'viral', '바이럴'];
+  const searchMentions = searchKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  signals.searchTrendZ = normalizeToZScore(searchMentions, 0, 8);
+  
+  // 4. 고객 관심도: 사용자/고객 관련 키워드
+  const customerKeywords = ['사용자', 'user', '고객', 'customer', '클라이언트', 'client', '리뷰', 'review'];
+  const customerMentions = customerKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  signals.customerBuzzZ = normalizeToZScore(customerMentions, 0, 15);
+  
+  // 5. 투자 신호: 투자/펀딩 관련 정보 추출
+  const investmentKeywords = ['투자', 'investment', '펀딩', 'funding', '라운드', 'round', '시리즈', 'series'];
+  const investmentMentions = investmentKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  
+  // 투자 금액 추출 시도 (억, 달러, million 등)
+  const amountPatterns = [
+    /(\d+)\s*억/g,
+    /(\d+)\s*million/g,
+    /(\d+)\s*billion/g,
+    /\$(\d+)\s*m/g,
+    /\$(\d+)\s*b/g,
+  ];
+  
+  let maxAmount = 0;
+  amountPatterns.forEach(pattern => {
+    const matches = allText.match(pattern);
+    if (matches) {
+      matches.forEach(match => {
+        const num = parseFloat(match.replace(/[^\d.]/g, ''));
+        if (match.includes('billion') || match.includes('b')) {
+          maxAmount = Math.max(maxAmount, num * 1000);
+        } else if (match.includes('억')) {
+          maxAmount = Math.max(maxAmount, num * 0.1); // 억 → 십억 단위로 변환
+        } else {
+          maxAmount = Math.max(maxAmount, num);
+        }
+      });
+    }
+  });
+  
+  if (investmentMentions > 0) {
+    signals.roundCount24m = {
+      count: Math.min(20, Math.max(1, Math.floor(investmentMentions / 2))),
+      amount: maxAmount > 0 ? Math.min(10, maxAmount) : Math.min(5, investmentMentions)
+    };
+  }
+  
+  // 6. 차별화 신호: 고유성/차별화 관련 키워드
+  const uspKeywords = ['차별화', 'differentiation', '고유', 'unique', '독특', '특별', '혁신', 'innovation'];
+  const uspMentions = uspKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  signals.uspDistance = Math.min(1, uspMentions / 5); // 0-5개 기준 정규화
+  
+  // 7. 모트 언급: 방어/경쟁우위 관련 키워드
+  const moatKeywords = ['방어', 'defense', '경쟁우위', 'competitive', '장벽', 'barrier', 'lock-in', '락인'];
+  signals.moatMentions = moatKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  
+  // 8. 틈새 포지션: 틈새/니치 관련 키워드
+  const nicheKeywords = ['틈새', 'niche', '특화', 'specialized', '집중', 'focus', '타겟', 'target'];
+  const nicheMentions = nicheKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  signals.nicheFitScore = Math.min(1, nicheMentions / 4); // 0-4개 기준 정규화
+  
+  // 9. 카피 리스크: 경쟁/모방 관련 키워드
+  const copycatKeywords = ['경쟁', 'competition', '모방', 'copy', '복제', 'clone', '카피', '이미지'];
+  const copycatMentions = copycatKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  signals.copycatRisk = Math.min(1, copycatMentions / 8); // 0-8개 기준 정규화
+  
+  // 10. 빅테크 진입 리스크: 대기업/빅테크 관련 키워드
+  const giantKeywords = ['대기업', 'big tech', '기업', 'enterprise', '플랫폼', 'platform', '거대', 'giant'];
+  const giantMentions = giantKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  signals.giantEntryRisk = Math.min(1, giantMentions / 6); // 0-6개 기준 정규화
+  
+  // 11. 실행 준비도: 기술/구현 관련 키워드
+  const execKeywords = ['기술', 'technology', '구현', 'implementation', '개발', 'development', '준비', 'ready'];
+  const execMentions = execKeywords.reduce((count, keyword) => {
+    return count + (allText.split(keyword.toLowerCase()).length - 1);
+  }, 0);
+  signals.execReadinessScore = Math.min(1, execMentions / 6); // 0-6개 기준 정규화
+  
+  // 아이디어 텍스트 자체의 특성도 반영
+  const ideaLength = ideaText.length;
+  const ideaWordCount = ideaText.split(/\s+/).length;
+  
+  // 긴 아이디어는 더 구체적일 가능성이 높음
+  if (ideaLength > 500) {
+    signals.execReadinessScore = Math.max(signals.execReadinessScore || 0, 0.3);
+  }
+  
+  // 아이디어에서 숫자/통계가 많으면 더 구체적
+  const numberCount = (ideaText.match(/\d+/g) || []).length;
+  if (numberCount > 3) {
+    signals.execReadinessScore = Math.max(signals.execReadinessScore || 0, 0.4);
+  }
+  
+  // 아이디어 고유성 점수 (텍스트 해시 기반으로 아이디어별 차별화)
+  const ideaHash = simpleHash(ideaText);
+  const uniquenessScore = (ideaHash % 100) / 100; // 0~1 범위
+  
+  // 신호가 없을 때 기본값으로 사용
+  if (signals.newsGrowthZ === undefined) {
+    signals.newsGrowthZ = (uniquenessScore - 0.5) * 2; // -1 ~ +1 범위로 변환
+  }
+  if (signals.uspDistance === undefined) {
+    signals.uspDistance = uniquenessScore * 0.6 + 0.2; // 0.2 ~ 0.8 범위
+  }
+  if (signals.nicheFitScore === undefined) {
+    signals.nicheFitScore = uniquenessScore * 0.5 + 0.3; // 0.3 ~ 0.8 범위
+  }
+  
+  return signals;
+}
+
+/**
+ * 아이디어 텍스트의 특징 분석
+ * @param {string} ideaText - 아이디어 텍스트
+ * @returns {Object} 특징 객체
+ */
+function analyzeIdeaCharacteristics(ideaText) {
+  const characteristics = {
+    length: ideaText.length,
+    wordCount: ideaText.split(/\s+/).length,
+    numberCount: (ideaText.match(/\d+/g) || []).length,
+    hasQuestion: ideaText.includes('?'),
+    hasExclamation: ideaText.includes('!'),
+    hasTechnicalTerms: /(API|AI|ML|데이터|알고리즘|시스템|플랫폼|서비스|앱|애플리케이션)/i.test(ideaText),
+    hasMarketTerms: /(시장|고객|사용자|비즈니스|수익|매출|고객|타겟)/i.test(ideaText),
+    hasInnovationTerms: /(혁신|새로운|차별화|고유|독특|특별)/i.test(ideaText),
+  };
+  
+  return characteristics;
+}
+
+/**
+ * 간단한 해시 함수 (아이디어별 고유값 생성)
+ * @param {string} text - 텍스트
+ * @returns {number} 해시 값
+ */
+function simpleHash(text) {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    const char = text.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * 값을 z-score로 변환 (-2 ~ +2 범위)
+ * @param {number} value - 변환할 값
+ * @param {number} min - 최소값
+ * @param {number} max - 최대값
+ * @returns {number} z-score (-2 ~ +2)
+ */
+function normalizeToZScore(value, min, max) {
+  if (max === min) return 0;
+  const normalized = (value - min) / (max - min); // 0~1
+  return (normalized - 0.5) * 4; // -2 ~ +2
 }
 

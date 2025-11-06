@@ -16,7 +16,8 @@ import {
   BarChart3,
   Download,
   Share2,
-  Trash2
+  Trash2,
+  LayoutTemplate
 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useEffect, useState } from "react";
@@ -33,6 +34,7 @@ const Report = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<any | null>(null);
+  const [creatingBM, setCreatingBM] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -110,6 +112,37 @@ const Report = () => {
     }
   };
 
+  const handleCreateBMCanvas = async () => {
+    if (!reportId) return;
+    setCreatingBM(true);
+    try {
+      const data = await apiFetch<{ success: boolean; projectId: string; bmCanvas: any }>(
+        `/api/workspace/create-from-report`,
+        {
+          method: "POST",
+          body: { reportId },
+        }
+      );
+      
+      if (!data.success) throw new Error("BM 캔버스 생성에 실패했습니다.");
+      
+      toast({
+        title: "BM 캔버스 생성 완료",
+        description: "비즈니스 모델 캔버스가 생성되었습니다.",
+      });
+      
+      navigate(`/workspace/${data.projectId}/bm`);
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "오류",
+        description: err.message || "BM 캔버스 생성 중 오류가 발생했습니다.",
+      });
+    } finally {
+      setCreatingBM(false);
+    }
+  };
+
   const getScoreColor = (score: number) => {
     return "text-foreground";
   };
@@ -170,6 +203,15 @@ const Report = () => {
         <div className="max-w-5xl mx-auto">
           {/* Actions */}
           <div className="flex justify-end gap-2 mb-6">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleCreateBMCanvas}
+              disabled={creatingBM}
+            >
+              <LayoutTemplate className="w-4 h-4 mr-2" />
+              {creatingBM ? "생성 중..." : "BM 캔버스 생성"}
+            </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">

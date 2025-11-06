@@ -7,6 +7,7 @@ import { notFound, errorHandler } from './middleware/error.js';
 import authRoutes from './routes/auth.js';
 import validateRoutes from './routes/validate.js';
 import reportRoutes from './routes/report.js';
+import workspaceRoutes from './routes/workspace.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/validate', validateRoutes);
 app.use('/api/report', reportRoutes);
+app.use('/api/workspace', workspaceRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

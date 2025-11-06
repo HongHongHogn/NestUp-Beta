@@ -16,6 +16,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   reports      Report[]
+  projects     Project[]
 }
 
 model Report {
@@ -29,8 +30,79 @@ model Report {
   competitionScore  Int?
   riskScore         Int?
   analysisJson      Json?
+  projectId          String?  // 리포트와 프로젝트 연결
 
   user User @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
 
   @@index([userId])
+  @@index([projectId])
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  userId        String
+  title         String
+  description   String?
+  reportId      String?  // 프로젝트를 시작한 리포트 ID
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User      @relation(fields: [userId], references: [id])
+  reports       Report[]  // 프로젝트에 연결된 리포트들
+  bmCanvas      BMCanvas? // BM 캔버스 (1:1 관계)
+  gtmStrategy   GTMStrategy? // GTM 전략 (1:1 관계)
+  mrd           MRD? // MVP 기능 정의서 (1:1 관계)
+
+  @@index([userId])
+}
+
+model BMCanvas {
+  id          String   @id @default(cuid())
+  projectId  String   @unique
+  title       String   @default("비즈니스 모델 캔버스")
+  
+  // 9-Blocks BM Canvas
+  keyPartners      Json? // 주요 파트너
+  keyActivities    Json? // 주요 활동
+  keyResources     Json? // 핵심 자원
+  valuePropositions Json? // 가치 제안
+  customerRelationships Json? // 고객 관계
+  channels         Json? // 채널
+  customerSegments Json? // 고객 세그먼트
+  costStructure    Json? // 비용 구조
+  revenueStreams   Json? // 수익원
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model GTMStrategy {
+  id          String   @id @default(cuid())
+  projectId  String   @unique
+  strategies  Json? // GTM 전략 옵션 배열
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model MRD {
+  id          String   @id @default(cuid())
+  projectId  String   @unique
+  title       String   @default("MVP 기능 정의서")
+  epics       Json? // Epic 목록
+  userStories Json? // User Story 목록
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }
